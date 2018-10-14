@@ -13,45 +13,41 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-//GenericServlet是一个抽象类
 public class DispatcherServlet extends GenericServlet {
 
-    private   ApplicationContext context ;
+    private ApplicationContext context;
 
     public void init() throws ServletException {
         super.init();
         context = new ClassPathXmlApplicationContext("spring.xml");
     }
 
-    @Override
     public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
-
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse)servletResponse;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         /*
-            staff/add.do      /login.do
-            staffController
-            public void add(HttpServletRequest request,HttpServletResponse response){}
-
+               staff/add.do        login.do
+               staffController
+               public void add(HttpServletRequest request, HttpServletResponse response){}
+        *
          */
-
         String path = request.getServletPath().substring(1);
         String beanName = null;
         String methodName = null;
         int index = path.indexOf('/');
-        if(index!=-1){
-            beanName = path.substring(0,index)+"Controller";
-            methodName = path.substring(index+1,path.indexOf(".do"));
-        }else{
+        if (index != -1) {
+            beanName = path.substring(0, index) + "Controller";
+            methodName = path.substring(index + 1, path.indexOf(".do"));
+        } else {
             beanName = "selfController";
-            methodName = path.substring(0,path.indexOf(".do"));
+            methodName = path.substring(0, path.indexOf(".do"));
         }
 
-         Object object = context.getBean(beanName);
+        Object obj = context.getBean(beanName);
         try {
-            Method method = object.getClass().getMethod(methodName,HttpServletRequest.class,HttpServletResponse.class);
-            method.invoke(object,request,response);
+            Method method = obj.getClass().getMethod(methodName,HttpServletRequest.class,HttpServletResponse.class);
+            method.invoke(obj,request,response);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -59,6 +55,5 @@ public class DispatcherServlet extends GenericServlet {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-
     }
 }
